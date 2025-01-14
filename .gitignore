@@ -1,0 +1,19 @@
+# Ignore virtual environments
+backend/venv/
+
+# Django migration files
+**/migrations/*.py[cod]
+!**/migrations/__init__.py
+
+# Python cache files
+*.pyc
+*.pyo
+__pycache__/
+
+# Logs and temporary files
+*.log
+*.sqlite3
+*.env
+.DS_Store
+*.bak
+*.swp
