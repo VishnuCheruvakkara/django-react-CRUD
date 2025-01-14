@@ -41,10 +41,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    #custom added...
+    #Third party apps
     'rest_framework',               # Adds support for building REST APIs
     'corsheaders',                  # Adds support for CORS
     'rest_framework_simplejwt',     # Adds JWT authentication
+    #custom apps
+    'api',
+    'Admin',
+    'User',
 ]
 
 MIDDLEWARE = [
@@ -67,10 +71,11 @@ CORS_ALLOWED_ORIGINS = [
 
 # settings.py
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
+    ],
 }
+
 
 ROOT_URLCONF = 'Home.urls'
 
