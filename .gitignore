@@ -1,5 +1,5 @@
 # Ignore virtual environments
-backend/venv/
+backend/env/
 
 # Django migration files
 **/migrations/*.py[cod]
