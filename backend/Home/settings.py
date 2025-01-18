@@ -172,7 +172,9 @@ SIMPLE_JWT={
     'REFRESH_TOKEN_LIFETIME':timedelta(days=1),
 }
 
-SESSION_COOKIE_HTTPONLY = True   
-
+SESSION_COOKIE_HTTPONLY = True 
+  
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+

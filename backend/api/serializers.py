@@ -2,7 +2,11 @@ from rest_framework import serializers
 from User.models import CustomUser 
 from django.contrib.auth.hashers import make_password 
 from django.contrib.auth import authenticate
-from django.contrib.auth.password_validation import validate_password 
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
+from PIL import Image
+from rest_framework.exceptions import ValidationError as DRFValidationError
+
 
 class UserRegisterSerializer(serializers.ModelSerializer):
     password=serializers.CharField(write_only=True,required=True)
@@ -51,10 +55,9 @@ class UserLoginSerializer(serializers.Serializer):
         return data
 
 
-
 class UserUpdateSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=False)  # Password is optional
-
+    password = serializers.CharField(write_only=True, required=False, allow_blank=True)  # Password is optional
+    profile_image = serializers.ImageField(required=False, allow_null=True)  # Optional image field
     class Meta:
         model = CustomUser
         fields = ['email', 'username', 'password', 'profile_image']
@@ -63,14 +66,54 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         if value:  # Only validate if password is provided
             validate_password(value)
         return value
+    
+    def validate_email(self, value):
+        # Check if the email is the same as the current user's email
+        if value == self.instance.email:
+            raise ValidationError("New email should not be the same as the old one.")
+        
+        # Check if the email is unique
+        if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
+            raise ValidationError("This email is already taken.")
+        
+        return value
+    
+    def validate_username(self, value):
+        if value==self.instance.username:
+            raise ValidationError("New username should not be the same as the old one.")
+        # Ensure the username is unique
+        if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
+            raise ValidationError("This username is already taken.")
+        
+        return value
+    
+    
+    def validate_profile_image(self, value):
+        """ Validate that the uploaded file is an image and check its size """
+        if value:
+            # Validate the image format (e.g., PNG, JPG)
+            try:
+                image = Image.open(value)
+                image.verify()  # This will raise an exception if it's not a valid image
+            except (IOError, SyntaxError) as e:
+                raise DRFValidationError("Uploaded file is not a valid image.")
+
+            # Validate file size (e.g., limit to 5MB)
+            max_size = 5 * 1024 * 1024  # 5 MB
+            if value.size > max_size:
+                raise DRFValidationError("The image file is too large. Maximum size is 5MB.")
+        
+        return value
 
     def update(self, instance, validated_data):
-        # Update email, username, and profile image
+        # Update email and username
         instance.email = validated_data.get('email', instance.email)
         instance.username = validated_data.get('username', instance.username)
+
+        # Update profile image if provided
         instance.profile_image = validated_data.get('profile_image', instance.profile_image)
 
-        # Update password if provided
+        # Update password only if it's provided (not empty)
         password = validated_data.get('password')
         if password:
             instance.password = make_password(password)

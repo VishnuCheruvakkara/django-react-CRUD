@@ -1,23 +1,27 @@
-import React, { useState,useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FaCamera } from 'react-icons/fa';
 import { FaHome } from 'react-icons/fa';
 import { FaUser } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
-import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../redux/authSlice';
 
 
 
 const UserProfile = () => {
     const dispatch = useDispatch();
-    const user = useSelector(state => state.user.user);
+    const user = useSelector((state) => state.user.user);
+    const accessToken = useSelector((state) => state.auth.token);
 
     const [formData, setFormData] = useState({
-        fullName: user && user.username ? user.username : 'User',
+        fullName: user?.username,
         email: user?.email,
         password: '',
         profileImage: null
     });
+    const [errors, setErrors] = useState({});
 
     const [isEditing, setIsEditing] = useState(false); // State to toggle edit mode
     const fileInputRef = useRef(null);
@@ -41,12 +45,102 @@ const UserProfile = () => {
         }
     };
 
-    // Handle form submission
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Logic to save the updated profile information (e.g., API call)
-        console.log("Form submitted", formData);
+
+        // Define headers outside of try block to be accessed inside the catch block
+        let headers = {
+            Authorization: `Bearer ${accessToken}`, // Send the access token in the Authorization header
+        };
+        // Create a new FormData object
+        const formDataToSend = new FormData();
+        // Append form data
+        formDataToSend.append('username', formData.fullName);
+        formDataToSend.append('email', formData.email);
+        formDataToSend.append('password', formData.password);
+
+        // Check if there's a profile image and append it
+        if (formData.profileImage) {
+            // Convert the base64 string to a Blob and append it as a file
+            const blob = dataURItoBlob(formData.profileImage);
+            formDataToSend.append('profile_image', blob, 'profile_image.jpg'); // or 'profile_image.png' depending on the file format
+        }
+
+        try {
+            // Attempt the profile update request
+            let response = await axios.put(
+                'http://localhost:8000/api/profile/update/', // API endpoint to update the profile
+                formDataToSend,
+                { headers }
+            );
+
+            if (response.status === 200) {
+                console.log("Profile updated successfully");
+            }
+        } catch (error) {
+            // If access token has expired, attempt to refresh it
+            if (error.response.status === 400) {
+                setErrors(error.response.data)
+            }
+            if (error.response && error.response.status === 401) {
+
+
+                console.log("Access token expired, attempting to refresh!");
+
+                try {
+                    const refreshResponse = await axios.post(
+                        'http://localhost:8000/api/token/refresh/', // Token refresh endpoint
+                        null,
+                        { withCredentials: true } // Send cookies with the request
+                    );
+
+                    if (refreshResponse.status === 200) {
+                        const newAccessToken = refreshResponse.data.access;
+                        dispatch(loginSuccess({ token: newAccessToken }));
+                        // Update headers with the new access token
+                        headers.Authorization = `Bearer ${newAccessToken}`;
+
+                        // Retry the profile update request with the new access token
+                        const retryResponse = await axios.put(
+                            'http://localhost:8000/api/profile/update/', // API endpoint to update the profile
+                            updatedData, // Now accessible after the token refresh
+                            { headers }
+                        );
+
+                        if (retryResponse.status === 200) {
+                            console.log("Profile updated successfully after token refresh!");
+                        }
+                    }
+                } catch (refreshError) {
+                    if (error.response.status === 400) {
+                        setErrors(error.response.data)
+                    }
+
+                    console.error("Error refreshing token:", refreshError);
+                    console.log("Session expired. Please log in again.");
+                }
+            } else {
+                console.error("Error updating profile:", error);
+            }
+        }
     };
+
+    // Helper function to convert base64 to Blob
+    const dataURItoBlob = (dataURI) => {
+        const byteString = atob(dataURI.split(',')[1]);
+        const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+        const arrayBuffer = new ArrayBuffer(byteString.length);
+        const uintArray = new Uint8Array(arrayBuffer);
+
+        for (let i = 0; i < byteString.length; i++) {
+            uintArray[i] = byteString.charCodeAt(i);
+        }
+
+        return new Blob([uintArray], { type: mimeString });
+    };
+
+
+
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
@@ -77,14 +171,14 @@ const UserProfile = () => {
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {/* Profile Image Section */}
                         <div className="flex flex-col items-center mb-8">
-                            <div 
+                            <div
                                 className={`relative w-32 h-32 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
                                 onClick={isEditing ? handleImageClick : null} // Trigger file input click only in edit mode
                             >
                                 {formData.profileImage ? (
-                                    <img 
-                                        src={formData.profileImage} 
-                                        alt="Profile" 
+                                    <img
+                                        src={formData.profileImage}
+                                        alt="Profile"
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
@@ -94,7 +188,7 @@ const UserProfile = () => {
                                 )}
                             </div>
                             {isEditing && (
-                                <input 
+                                <input
                                     type="file"
                                     ref={fileInputRef}
                                     onChange={handleImageChange}
@@ -103,6 +197,8 @@ const UserProfile = () => {
                                 />
                             )}
                             <p className="text-sm text-gray-500 mt-2">Click to upload profile picture</p>
+                            {errors.profile_image && <p className="text-red-500 text-sm mt-1 text-center">{errors.profile_image}</p>} {/* Display error */}
+                            
                         </div>
 
                         {/* Form Fields */}
@@ -113,12 +209,13 @@ const UserProfile = () => {
                                     type="text"
                                     name="fullName"
                                     value={formData.fullName}
-                                    
+
                                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                                     className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     placeholder="John Doe"
                                     disabled={!isEditing} // Disable input if not in edit mode
                                 />
+                                {errors.username && <p className="text-red-500 text-sm mt-1">{errors.username}</p>} {/* Display error */}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -131,6 +228,7 @@ const UserProfile = () => {
                                     placeholder="john@example.com"
                                     disabled={!isEditing} // Disable input if not in edit mode
                                 />
+                                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>} {/* Display error */}
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Password</label>
@@ -143,6 +241,16 @@ const UserProfile = () => {
                                     placeholder="••••••••"
                                     disabled={!isEditing} // Disable input if not in edit mode
                                 />
+
+
+                                {errors.password && (
+                                    <div className="text-red-500 text-sm mt-1">
+                                        {errors.password.map((error, index) => (
+                                            <p key={index}>{error}</p>
+                                        ))}
+                                    </div>
+                                )}
+
                             </div>
                         </div>
 
@@ -157,7 +265,7 @@ const UserProfile = () => {
                                         Save Changes
                                     </button>
                                     <button
-                                        type="button"
+
                                         onClick={() => setIsEditing(false)} // Cancel edit mode
                                         className="inline-flex justify-center rounded-md bg-gray-100 px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200 transition-colors"
                                     >
@@ -166,7 +274,7 @@ const UserProfile = () => {
                                 </>
                             ) : (
                                 <button
-                                    type="button"
+
                                     onClick={() => setIsEditing(true)} // Enable edit mode
                                     className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
                                 >

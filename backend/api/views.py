@@ -74,3 +74,27 @@ class UserProfileUpdateView(APIView):
                 status=status.HTTP_200_OK
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class TokenRefreshView(APIView):
+    def post(self, request):
+        refresh_token = request.COOKIES.get('refresh')  # Get refresh token from cookies
+        if not refresh_token:
+            return Response(
+                {'message': 'Refresh token not found!'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        try:
+            refresh = RefreshToken(refresh_token)  # Decode and validate refresh token
+            access_token = str(refresh.access_token)  # Generate new access token
+
+            return Response(
+                {'access': access_token},
+                status=status.HTTP_200_OK
+            )
+        except Exception as e:
+            return Response(
+                {'message': 'Invalid or expired refresh token!'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
