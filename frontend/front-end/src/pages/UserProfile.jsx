@@ -1,0 +1,184 @@
+import React, { useState,useEffect, useRef } from 'react';
+import { FaCamera } from 'react-icons/fa';
+import { FaHome } from 'react-icons/fa';
+import { FaUser } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { Link } from 'react-router-dom';
+
+
+
+const UserProfile = () => {
+    const dispatch = useDispatch();
+    const user = useSelector(state => state.user.user);
+
+    const [formData, setFormData] = useState({
+        fullName: user && user.username ? user.username : 'User',
+        email: user?.email,
+        password: '',
+        profileImage: null
+    });
+
+    const [isEditing, setIsEditing] = useState(false); // State to toggle edit mode
+    const fileInputRef = useRef(null);
+
+    // Trigger file input when profile image area is clicked
+    const handleImageClick = () => {
+        fileInputRef.current.click();
+    };
+
+    // Handle file input change to read the selected image
+    const handleImageChange = (e) => {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setFormData(prev => ({
+                    ...prev,
+                    profileImage: e.target.result // Set the selected image as profile image
+                }));
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    };
+
+    // Handle form submission
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        // Logic to save the updated profile information (e.g., API call)
+        console.log("Form submitted", formData);
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex">
+            {/* Sidebar */}
+            <div className="w-64 bg-white shadow-lg">
+                <div className="flex flex-col h-full">
+                    <div className="p-4 border-b">
+                        <h2 className="text-xl font-bold text-gray-800">User Settings</h2>
+                    </div>
+                    <nav className="flex-1 p-4">
+                        <Link to="/home" className="flex items-center space-x-3 text-gray-700 hover:text-blue-500 p-2 rounded-lg hover:bg-gray-100">
+                            <FaHome className="text-xl" />
+                            <span>Back to Home</span>
+                        </Link>
+                        <a href="/profile" className="flex items-center space-x-3 text-blue-500 bg-blue-50 p-2 rounded-lg mt-2">
+                            <FaUser className="text-xl" />
+                            <span>Edit Profile</span>
+                        </a>
+                    </nav>
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="flex-1 p-8">
+                <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
+                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Profile</h1>
+
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {/* Profile Image Section */}
+                        <div className="flex flex-col items-center mb-8">
+                            <div 
+                                className={`relative w-32 h-32 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
+                                onClick={isEditing ? handleImageClick : null} // Trigger file input click only in edit mode
+                            >
+                                {formData.profileImage ? (
+                                    <img 
+                                        src={formData.profileImage} 
+                                        alt="Profile" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center">
+                                        <FaCamera className="text-3xl text-gray-400" />
+                                    </div>
+                                )}
+                            </div>
+                            {isEditing && (
+                                <input 
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={handleImageChange}
+                                    accept="image/*"
+                                    className="hidden" // Hide the input field
+                                />
+                            )}
+                            <p className="text-sm text-gray-500 mt-2">Click to upload profile picture</p>
+                        </div>
+
+                        {/* Form Fields */}
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    value={formData.fullName}
+                                    
+                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                    className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="John Doe"
+                                    disabled={!isEditing} // Disable input if not in edit mode
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="john@example.com"
+                                    disabled={!isEditing} // Disable input if not in edit mode
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Password</label>
+                                <input
+                                    type="password"
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="mt-1 p-2 w-full border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="••••••••"
+                                    disabled={!isEditing} // Disable input if not in edit mode
+                                />
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end space-x-4 pt-4">
+                            {isEditing ? (
+                                <>
+                                    <button
+                                        type="submit"
+                                        className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                                    >
+                                        Save Changes
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsEditing(false)} // Cancel edit mode
+                                        className="inline-flex justify-center rounded-md bg-gray-100 px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={() => setIsEditing(true)} // Enable edit mode
+                                    className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
+                                >
+                                    Edit Profile
+                                </button>
+                            )}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default UserProfile;

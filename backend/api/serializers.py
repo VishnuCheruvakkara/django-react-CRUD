@@ -45,6 +45,35 @@ class UserLoginSerializer(serializers.Serializer):
         if user is None:
             raise serializers.ValidationError("Invalid email or password.")
 
+        
         # Return user if authentication is successful
         data['user'] = user
         return data
+
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True, required=False)  # Password is optional
+
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'username', 'password', 'profile_image']
+
+    def validate_password(self, value):
+        if value:  # Only validate if password is provided
+            validate_password(value)
+        return value
+
+    def update(self, instance, validated_data):
+        # Update email, username, and profile image
+        instance.email = validated_data.get('email', instance.email)
+        instance.username = validated_data.get('username', instance.username)
+        instance.profile_image = validated_data.get('profile_image', instance.profile_image)
+
+        # Update password if provided
+        password = validated_data.get('password')
+        if password:
+            instance.password = make_password(password)
+
+        instance.save()
+        return instance

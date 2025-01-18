@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from pathlib import Path
+from datetime import timedelta
 
 import environ
 import os 
@@ -59,14 +60,16 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    #cusom middle ware added...
+    #3rd party middle ware added...
     'corsheaders.middleware.CorsMiddleware'
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True 
+
+# Allow credentials (cookies) to be included in requests
+CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React development server
+    "http://localhost:5173",  # React development server
 ]
 
 # settings.py
@@ -163,3 +166,13 @@ AUTHENTICATION_BACKENDS = [
     'User.backends.EmailBackend',  # Custom backend
     'django.contrib.auth.backends.ModelBackend',  # Default backend
 ]
+
+SIMPLE_JWT={
+    'ACCESS_TOKEN_LIFETIME':timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME':timedelta(days=1),
+}
+
+SESSION_COOKIE_HTTPONLY = True   
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

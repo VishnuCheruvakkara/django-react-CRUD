@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/authSlice';
 import { GridLoader } from 'react-spinners';
+import {setUser} from '../redux/userSlice'
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -18,16 +19,19 @@ const Login = () => {
         setLoading(true)
         setError('');
         try {
-            const response = await axios.post('http://localhost:8000/api/login/', { email, password });
-            const { access, refresh } = response.data;
-
+            const response = await axios.post('http://localhost:8000/api/login/', { email, password },{
+                withCredentials:true,
+            });
+            // Extract access token from the response
+            const access = response.data.access;
+            const userData = response.data.user;
+            console.log("data : ",response.data); // Check if userData exists in the response
+            console.log("user data : ",response.data.user)
+            
+            dispatch(setUser(userData))
             // Dispatching the loginSuccess action with access and refresh tokens
-            dispatch(loginSuccess({ token: access, refreshToken: refresh }));
-
-            // Optionally store the token in localStorage for persistence across sessions
-            localStorage.setItem('token', access);
-            localStorage.setItem('refreshToken', refresh);
-
+            dispatch(loginSuccess({ token: access }));
+            
             // Redirect user to home page after successful login
             navigate('/home');
         } catch (error) {
