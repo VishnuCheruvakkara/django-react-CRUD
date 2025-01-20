@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/authSlice';
+import { setUser } from '../redux/userSlice';
 
 
 
@@ -19,7 +20,7 @@ const UserProfile = () => {
         fullName: user?.username,
         email: user?.email,
         password: '',
-        profileImage: null
+        profileImage: null,
     });
     const [errors, setErrors] = useState({});
 
@@ -76,6 +77,10 @@ const UserProfile = () => {
 
             if (response.status === 200) {
                 console.log("Profile updated successfully");
+                const { fullName, email, profileImage } = formData;
+                dispatch(setUser({ username: fullName, email: email, profileImage: profileImage }));
+                setIsEditing(false);
+                setErrors({}); 
             }
         } catch (error) {
             // If access token has expired, attempt to refresh it
@@ -109,6 +114,10 @@ const UserProfile = () => {
 
                         if (retryResponse.status === 200) {
                             console.log("Profile updated successfully after token refresh!");
+                            const { fullName, email, profileImage } = formData;
+                            dispatch(setUser({ username: fullName, email: email, profileImage: profileImage }));
+                            setIsEditing(false);
+                            setErrors({}); 
                         }
                     }
                 } catch (refreshError) {
@@ -168,16 +177,25 @@ const UserProfile = () => {
                 <div className="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-8">
                     <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Profile</h1>
 
-                    <form className="space-y-6" onSubmit={handleSubmit}>
+                    <form className="space-y-6" >
                         {/* Profile Image Section */}
                         <div className="flex flex-col items-center mb-8">
+
+
                             <div
                                 className={`relative w-32 h-32 rounded-full bg-gray-200 overflow-hidden cursor-pointer hover:opacity-90 transition-all`}
                                 onClick={isEditing ? handleImageClick : null} // Trigger file input click only in edit mode
                             >
+                                {/* Show the selected image or the user's profile image */}
                                 {formData.profileImage ? (
                                     <img
-                                        src={formData.profileImage}
+                                        src={formData.profileImage} // Show the selected image
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : user?.profileImage ? (
+                                    <img
+                                        src={`http://localhost:8000${user.profileImage}`} // Show the profile image from Redux
                                         alt="Profile"
                                         className="w-full h-full object-cover"
                                     />
@@ -187,6 +205,10 @@ const UserProfile = () => {
                                     </div>
                                 )}
                             </div>
+
+
+
+
                             {isEditing && (
                                 <input
                                     type="file"
@@ -196,15 +218,15 @@ const UserProfile = () => {
                                     className="hidden" // Hide the input field
                                 />
                             )}
-                            <p className="text-sm text-gray-500 mt-2">Click to upload profile picture</p>
+                            <p className="text-sm text-gray-500 mt-2">Click <b>Edit Profile</b> button</p>
                             {errors.profile_image && <p className="text-red-500 text-sm mt-1 text-center">{errors.profile_image}</p>} {/* Display error */}
-                            
+
                         </div>
 
                         {/* Form Fields */}
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Full Name</label>
+                                <label className="block text-sm font-medium text-gray-700">User Name</label>
                                 <input
                                     type="text"
                                     name="fullName"
@@ -259,13 +281,14 @@ const UserProfile = () => {
                             {isEditing ? (
                                 <>
                                     <button
-                                        type="submit"
+                                        onClick={handleSubmit}
+                                        type="button"
                                         className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
                                     >
                                         Save Changes
                                     </button>
                                     <button
-
+                                        type='button'
                                         onClick={() => setIsEditing(false)} // Cancel edit mode
                                         className="inline-flex justify-center rounded-md bg-gray-100 px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200 transition-colors"
                                     >
@@ -274,8 +297,11 @@ const UserProfile = () => {
                                 </>
                             ) : (
                                 <button
-
-                                    onClick={() => setIsEditing(true)} // Enable edit mode
+                                    type='button'
+                                    onClick={(e) => {
+                                        e.preventDefault;
+                                        setIsEditing(true);
+                                    }} // Enable edit mode
                                     className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
                                 >
                                     Edit Profile

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.admin.models import LogEntry
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True)
@@ -19,3 +20,8 @@ class CustomUser(AbstractUser):
         related_name='customuser_permissions',  # Change the related_name
         blank=True
     )
+
+    def delete(self, *args, **kwargs):
+        # Optionally clean up related log entries
+        LogEntry.objects.filter(user_id=self.id).delete()
+        super().delete(*args, **kwargs)

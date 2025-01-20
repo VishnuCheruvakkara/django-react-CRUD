@@ -52,6 +52,7 @@ class UserLoginSerializer(serializers.Serializer):
         
         # Return user if authentication is successful
         data['user'] = user
+        
         return data
 
 
@@ -68,10 +69,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return value
     
     def validate_email(self, value):
-        # Check if the email is the same as the current user's email
-        if value == self.instance.email:
-            raise ValidationError("New email should not be the same as the old one.")
-        
         # Check if the email is unique
         if CustomUser.objects.filter(email=value).exclude(id=self.instance.id).exists():
             raise ValidationError("This email is already taken.")
@@ -79,8 +76,6 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return value
     
     def validate_username(self, value):
-        if value==self.instance.username:
-            raise ValidationError("New username should not be the same as the old one.")
         # Ensure the username is unique
         if CustomUser.objects.filter(username=value).exclude(id=self.instance.id).exists():
             raise ValidationError("This username is already taken.")
@@ -120,3 +115,11 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+
+################# Admin Side serializers ################### 
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'username', 'email', 'is_staff', 'profile_image']
