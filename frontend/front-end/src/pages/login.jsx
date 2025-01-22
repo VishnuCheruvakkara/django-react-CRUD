@@ -38,7 +38,7 @@ const Login = () => {
                 navigate('/adminpage');
             } else {
                 // Redirect regular user to the home page
-                navigate('/home');
+                navigate('/');
             }
         } catch (error) {
             if (error.response && error.response.data) {

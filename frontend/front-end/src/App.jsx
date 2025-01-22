@@ -5,18 +5,23 @@ import Register from './pages/register'
 import Home from './pages/Home'
 import UserProfile from './pages/UserProfile'
 import AdminPage from './pages/AdminPage'
-
+import PrivateRoute from './components/PrivateRoute'
+import AdminRoute from './components/AdminRoute'
+import PublicRoute from './components/PublicRoute'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path='login/' element={<Login/>} />
-        <Route path='register/' element={<Register/>} />
-        <Route path='/home' element={<Home/>} />
-        <Route path='/userprofile' element={<UserProfile/>} />
-        <Route path='/adminpage' element={<AdminPage/>} />
+       
+        <Route path='login/' element={<PublicRoute><Login/></PublicRoute>} />
+        <Route path='register/' element={<Register />} />
+        <Route path='/' element={<PrivateRoute><Home/></PrivateRoute>} />
+        <Route path='/userprofile' element={<PrivateRoute><UserProfile /></PrivateRoute>} />
+        <Route path='/adminpage' element={<AdminRoute><AdminPage /></AdminRoute>} />
+        
       </Routes>
+
     </BrowserRouter>
   )
 }

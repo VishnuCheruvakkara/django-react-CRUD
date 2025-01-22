@@ -10,7 +10,6 @@ import { loginSuccess } from '../redux/authSlice';
 import { setUser } from '../redux/userSlice';
 
 
-
 const UserProfile = () => {
     const dispatch = useDispatch();
     const user = useSelector((state) => state.user.user);
@@ -39,10 +38,11 @@ const UserProfile = () => {
             reader.onload = (e) => {
                 setFormData(prev => ({
                     ...prev,
-                    profileImage: e.target.result // Set the selected image as profile image
+                    profileImage: e.target.result, // Set the selected image as profile image
+                   
                 }));
             };
-            reader.readAsDataURL(e.target.files[0]);
+        reader.readAsDataURL(e.target.files[0]);
         }
     };
 
@@ -148,9 +148,6 @@ const UserProfile = () => {
         return new Blob([uintArray], { type: mimeString });
     };
 
-
-
-
     return (
         <div className="min-h-screen bg-gray-50 flex">
             {/* Sidebar */}
@@ -160,7 +157,7 @@ const UserProfile = () => {
                         <h2 className="text-xl font-bold text-gray-800">User Settings</h2>
                     </div>
                     <nav className="flex-1 p-4">
-                        <Link to="/home" className="flex items-center space-x-3 text-gray-700 hover:text-blue-500 p-2 rounded-lg hover:bg-gray-100">
+                        <Link to="/" className="flex items-center space-x-3 text-gray-700 hover:text-blue-500 p-2 rounded-lg hover:bg-gray-100">
                             <FaHome className="text-xl" />
                             <span>Back to Home</span>
                         </Link>

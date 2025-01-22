@@ -60,7 +60,7 @@ const HomePage = () => {
                     <div className="flex justify-between h-16 items-center">
                         {/* Logo */}
                         <div className="flex-shrink-0 flex items-center">
-                            <Link to="/home" className="text-2xl font-bold text-blue-500">
+                            <Link to="/" className="text-2xl font-bold text-blue-500">
                                 DataManager
                             </Link>
                         </div>
