@@ -8,7 +8,8 @@ import { clearUser } from '../redux/userSlice'
 import { useDispatch } from 'react-redux';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
-import {persistor} from '../redux/store'
+import { persistor } from '../redux/store'
+import { showToast } from '../components/ToastNotifications';
 
 const HomePage = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -46,6 +47,7 @@ const HomePage = () => {
                     localStorage.removeItem('persist:root'); // Remove leftover keys manually
                 }, 500); 
                 navigate('/login');
+                showToast("You have successfully signed out,See you soon...",'success')
             }
         } catch (error) {
             console.error('Error during logout:', error);

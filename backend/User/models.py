@@ -21,7 +21,4 @@ class CustomUser(AbstractUser):
         blank=True
     )
 
-    def delete(self, *args, **kwargs):
-        # Optionally clean up related log entries
-        LogEntry.objects.filter(user_id=self.id).delete()
-        super().delete(*args, **kwargs)
+   

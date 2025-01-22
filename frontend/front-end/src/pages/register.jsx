@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate, Link } from 'react-router-dom';
 import { GridLoader } from 'react-spinners';
+import { showToast } from '../components/ToastNotifications';
 
 const Register = () => {
   const [email, setEmail] = useState('');
@@ -24,8 +25,11 @@ const Register = () => {
 
       if (response.status === 201) {
         navigate('/login');
+        showToast("Registration successfull!,Login to you account...",'success')
+
       }
     } catch (error) {
+      showToast("Error found, Try again!",'error')
       if (error.response && error.response.data) {
         setFieldErrors(error.response.data);
       } else {

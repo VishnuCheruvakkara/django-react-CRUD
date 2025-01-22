@@ -8,6 +8,7 @@ import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { loginSuccess } from '../redux/authSlice';
 import { setUser } from '../redux/userSlice';
+import { showToast } from '../components/ToastNotifications';
 
 
 const UserProfile = () => {
@@ -76,7 +77,8 @@ const UserProfile = () => {
             );
 
             if (response.status === 200) {
-                console.log("Profile updated successfully",response.data);
+                console.log("Profile updated successfully", response.data);
+                showToast("Profile updated successfully",'success')
                 const updatedUser = response.data.data;
                 dispatch(setUser({
                     username: updatedUser.username,
@@ -87,6 +89,7 @@ const UserProfile = () => {
                 setErrors({}); 
             }
         } catch (error) {
+            showToast("Error found, Try again!",'error')
             // If access token has expired, attempt to refresh it
             if (error.response.status === 400) {
                 setErrors(error.response.data)
@@ -290,7 +293,11 @@ const UserProfile = () => {
                                     </button>
                                     <button
                                         type='button'
-                                        onClick={() => setIsEditing(false)} // Cancel edit mode
+                                        onClick={() => {
+                                            setIsEditing(false);
+                                            setErrors({})
+                                            showToast("Edit Profile Cancelled!",'warn')
+                                        }} // Cancel edit mode
                                         className="inline-flex justify-center rounded-md bg-gray-100 px-6 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-200 transition-colors"
                                     >
                                         Cancel
@@ -302,6 +309,7 @@ const UserProfile = () => {
                                     onClick={(e) => {
                                         e.preventDefault;
                                         setIsEditing(true);
+                                        showToast("Edit option enabled...",'info')
                                     }} // Enable edit mode
                                     className="inline-flex justify-center rounded-md bg-blue-600 px-6 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 transition-colors"
                                 >
