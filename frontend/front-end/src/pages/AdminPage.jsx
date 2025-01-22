@@ -13,11 +13,19 @@ import { logout } from '../redux/authSlice';
 import { clearUser } from '../redux/userSlice';
 import DefaultUserImage from '../assets/default-user.jpg';
 import { useSelector } from 'react-redux';
+import { setAuthData } from '../redux/authDataSlice';
 
 function AdminPage() {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [users, setUsers] = useState([]);
+    const users = useSelector((state) => state.authData.authData);
+    const [searchQuery,setSearchQuery]=useState('')
+
+    const filteredUsers = users.filter((user) =>
+        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
 
     const [isModalOpen, setModalOpen] = useState(false);  // State to manage modal visibility
     const [isEditUserModalOpen, setIsEditUserModalOpen] = useState(false);
@@ -65,7 +73,7 @@ function AdminPage() {
                     withCredentials: true,
                 });
 
-                setUsers(response.data);
+                dispatch(setAuthData(response.data));
                 console.log('Fetched users successfully!', response.data);
             } catch (error) {
                 console.error('Error fetching users:', error);
@@ -191,6 +199,8 @@ function AdminPage() {
                                 <input
                                     type="text"
                                     placeholder="Search users..."
+                                    value={searchQuery}
+                                    onChange={(e)=>setSearchQuery(e.target.value)}
                                     className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
@@ -214,7 +224,7 @@ function AdminPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {users.filter((user) => !user.is_staff).map((user) => (
+                                        {filteredUsers.filter((user) => !user.is_staff).map((user) => (
                                             <tr key={user.id} className="hover:bg-gray-50">
                                                 <td className="px-6 py-4 whitespace-nowrap text-center">
                                                     <img

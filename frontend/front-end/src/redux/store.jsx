@@ -3,18 +3,20 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage'; // Defaults to localStorage for web
 import authReducer from './authSlice';
 import userReducer from './userSlice';
+import authDataReducer from './authDataSlice'
 
 // Combine reducers
 const rootReducer = combineReducers({
     auth: authReducer,
     user: userReducer,
+    authData:authDataReducer,
 });
 
 // Redux Persist configuration
 const persistConfig = {
     key: 'root', // Key to save the persisted state in localStorage
     storage,
-    whitelist:['auth','user']
+    whitelist:['auth','user','authData']
 };
 
 // Create a persisted reducer

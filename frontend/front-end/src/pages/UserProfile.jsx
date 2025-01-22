@@ -76,9 +76,13 @@ const UserProfile = () => {
             );
 
             if (response.status === 200) {
-                console.log("Profile updated successfully");
-                const { fullName, email, profileImage } = formData;
-                dispatch(setUser({ username: fullName, email: email, profileImage: profileImage }));
+                console.log("Profile updated successfully",response.data);
+                const updatedUser = response.data.data;
+                dispatch(setUser({
+                    username: updatedUser.username,
+                    email: updatedUser.email,
+                    profileImage: updatedUser.profile_image, // Update Redux with the backend path
+                }));
                 setIsEditing(false);
                 setErrors({}); 
             }
@@ -113,7 +117,7 @@ const UserProfile = () => {
                         );
 
                         if (retryResponse.status === 200) {
-                            console.log("Profile updated successfully after token refresh!");
+                            console.log("Profile updated successfully after token refresh!" );
                             const { fullName, email, profileImage } = formData;
                             dispatch(setUser({ username: fullName, email: email, profileImage: profileImage }));
                             setIsEditing(false);
