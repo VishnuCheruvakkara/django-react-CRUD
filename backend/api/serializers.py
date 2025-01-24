@@ -64,6 +64,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         fields = ['email', 'username', 'password', 'profile_image']
 
     def validate_password(self, value):
+        print(value)
         if value:  # Only validate if password is provided
             validate_password(value)
         return value

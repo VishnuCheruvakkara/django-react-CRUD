@@ -67,9 +67,10 @@ MIDDLEWARE = [
 
 # Allow credentials (cookies) to be included in requests
 CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # React development server
+    "http://localhost:5174",  # React development server
 ]
 
 # settings.py
