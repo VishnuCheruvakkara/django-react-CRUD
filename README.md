@@ -6,7 +6,7 @@ The application includes:
 
 - **Admin Side**: Manage user data with functionalities like adding, editing, updating, and deleting users, with a **search implementation** for easy navigation.
 - **User Side**: Users can sign up, sign in, and edit their profile data seamlessly.
-### Video Demo
+### Video Demo of the CRUD app
 [Watch the video demo here](https://www.linkedin.com/posts/vishnu-cheruvakkara-231b8b235_python-djangoreact-pythondjangoreactproject-activity-7288911894915035136-6zPY?utm_source=share&utm_medium=member_desktop)
 
 ---
